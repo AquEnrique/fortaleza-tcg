@@ -14,6 +14,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Torneo', icon: 'Home', requiresRunning: false },
   { href: '/judge', label: 'Vista de Juez', icon: 'Gavel', requiresRunning: true },
+  { href: '/genesys-list', label: 'Lista Genesys', icon: 'Coins', requiresRunning: false },
   { href: '/life-points', label: 'Puntos de Vida', icon: 'Heart', requiresRunning: false },
   { href: '/angelechy', label: 'Angelechy', icon: 'Crown', requiresRunning: false },
 ];

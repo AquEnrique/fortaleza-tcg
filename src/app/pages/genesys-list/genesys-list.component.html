@@ -1,0 +1,219 @@
+<main class="flex-grow space-y-4 p-4 pb-24 md:space-y-6 md:p-6">
+  <div class="space-y-1">
+    <h1 class="text-2xl font-bold tracking-tight md:text-3xl">Lista Genesys</h1>
+    <p class="text-sm text-muted-foreground">
+      Todas las cartas que cuestan puntos en Genesys. Un deck puede gastar hasta
+      <span class="font-score font-semibold text-primary">{{ budget }}</span> puntos; lo que no está en esta lista es gratis.
+    </p>
+  </div>
+
+  @switch (cards.state()) {
+    @case ('error') {
+      <div class="flex flex-col items-center gap-4 rounded-lg border border-destructive/40 bg-destructive/10 p-8 text-center">
+        <lucide-icon name="AlertTriangle" [size]="32" class="text-destructive" />
+        <div class="space-y-1">
+          <p class="font-semibold">No se pudo cargar la lista de cartas.</p>
+          <p class="text-sm text-muted-foreground">Revisa tu conexión e inténtalo de nuevo.</p>
+        </div>
+        <button appButton variant="outline" class="gap-2" (click)="cards.reload()">
+          <lucide-icon name="RefreshCw" [size]="16" />
+          Reintentar
+        </button>
+      </div>
+    }
+
+    @case ('ready') {
+      <!-- Buscador y vista -->
+      <div class="space-y-3 rounded-lg border bg-card p-3 md:p-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div class="relative flex-1">
+            <lucide-icon
+              name="Search"
+              [size]="16"
+              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+            <input
+              appInput
+              type="search"
+              class="pl-10 pr-9"
+              placeholder="Buscar por nombre..."
+              aria-label="Buscar cartas"
+              autocomplete="off"
+              [value]="filters().query"
+              (input)="setQuery($any($event.target).value)"
+            />
+            @if (filters().query) {
+              <button
+                type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                (click)="setQuery('')"
+              >
+                <lucide-icon name="X" [size]="14" />
+                <span class="sr-only">Limpiar búsqueda</span>
+              </button>
+            }
+          </div>
+
+          <button
+            appButton
+            [variant]="showFilters() ? 'secondary' : 'outline'"
+            class="gap-2"
+            [attr.aria-expanded]="showFilters()"
+            (click)="showFilters.set(!showFilters())"
+          >
+            <lucide-icon name="SlidersHorizontal" [size]="16" />
+            Filtros
+            @if (activeFilterCount() > 0) {
+              <span class="rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">{{ activeFilterCount() }}</span>
+            }
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          <div class="flex">
+            <app-filter-chip [selected]="filters().searchText" (toggled)="toggleSearchText()">
+              Buscar también en el texto de la carta
+            </app-filter-chip>
+          </div>
+
+          <!-- Two columns on a phone so each select keeps a usable width; a plain
+               right-aligned row once there's space for one. -->
+          <div class="grid grid-cols-2 gap-3 sm:ml-auto sm:flex sm:flex-wrap sm:items-end">
+            <div class="min-w-0 space-y-1.5">
+              <label appLabel for="genesys-sort" class="flex items-center gap-1.5 text-muted-foreground">
+                <lucide-icon name="ArrowUpDown" [size]="13" />
+                Ordenar
+              </label>
+              <select appSelect id="genesys-sort" [value]="filters().sortBy" (change)="setSort($any($event.target).value)">
+                @for (option of sortOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="min-w-0 space-y-1.5">
+              <label appLabel for="genesys-group" class="flex items-center gap-1.5 text-muted-foreground">
+                <lucide-icon name="Layers" [size]="13" />
+                Agrupar por
+              </label>
+              <select appSelect id="genesys-group" [value]="filters().groupBy" (change)="setGroup($any($event.target).value)">
+                @for (option of groupOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (showFilters()) {
+        <app-genesys-filters [(filters)]="filters" [facets]="cards.facets()" [activeCount]="activeFilterCount()" />
+      }
+
+      <!-- Resumen de resultados -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm text-muted-foreground">
+          <span class="font-score font-semibold text-foreground">{{ matchCount() }}</span>
+          de {{ cards.cards().length }} cartas
+          @if (hasMore()) {
+            <span class="text-xs">(mostrando {{ shownCount() }})</span>
+          }
+        </p>
+
+        <div class="flex items-center gap-2">
+          @if (activeFilterCount() > 0) {
+            <button appButton variant="ghost" size="sm" class="gap-2" (click)="clearFilters()">
+              <lucide-icon name="Eraser" [size]="16" />
+              Limpiar filtros
+            </button>
+          }
+          @if (isGrouped() && groups().length > 1) {
+            <button appButton variant="outline" size="sm" class="gap-2" (click)="toggleAllGroups()">
+              <lucide-icon [name]="allCollapsed() ? 'ChevronDown' : 'ChevronUp'" [size]="16" />
+              {{ allCollapsed() ? 'Expandir todo' : 'Colapsar todo' }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Resultados -->
+      @if (matchCount() === 0) {
+        <div class="flex flex-col items-center gap-4 rounded-lg border border-dashed p-10 text-center">
+          <lucide-icon name="Search" [size]="28" class="text-muted-foreground" />
+          <div class="space-y-1">
+            <p class="font-semibold">Ninguna carta coincide con la búsqueda.</p>
+            <p class="text-sm text-muted-foreground">Prueba con menos filtros o busca también en el texto de la carta.</p>
+          </div>
+          @if (activeFilterCount() > 0) {
+            <button appButton variant="outline" class="gap-2" (click)="clearFilters()">
+              <lucide-icon name="Eraser" [size]="16" />
+              Limpiar filtros
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="space-y-5">
+          @for (group of groups(); track group.key) {
+            <section class="space-y-2">
+              @if (group.label) {
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-2 border-b pb-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  [attr.aria-expanded]="!isGroupCollapsed(group.key)"
+                  (click)="toggleGroup(group.key)"
+                >
+                  <lucide-icon
+                    name="ChevronDown"
+                    [size]="16"
+                    class="shrink-0 text-muted-foreground transition-transform duration-200"
+                    [class.-rotate-90]="isGroupCollapsed(group.key)"
+                  />
+                  <h2 class="text-base font-semibold md:text-lg">{{ group.label }}</h2>
+                  <span class="font-score text-xs text-muted-foreground">
+                    {{ group.cards.length }} {{ group.cards.length === 1 ? 'carta' : 'cartas' }}
+                  </span>
+                </button>
+              }
+
+              @if (!isGroupCollapsed(group.key)) {
+                <div class="space-y-2">
+                  @for (card of group.cards; track card.id) {
+                    <app-genesys-card-row
+                      [card]="card"
+                      [expanded]="expandedId() === card.id"
+                      (toggled)="toggleCard(card.id)"
+                    />
+                  }
+                </div>
+              }
+            </section>
+          }
+        </div>
+
+        @if (hasMore()) {
+          <div class="flex justify-center pt-2">
+            <button appButton variant="outline" class="gap-2" (click)="showMore()">
+              <lucide-icon name="ChevronDown" [size]="16" />
+              Mostrar más ({{ matchCount() - shownCount() }} restantes)
+            </button>
+          </div>
+        }
+      }
+
+      @if (cards.generatedAt()) {
+        <p class="pt-2 text-center text-xs text-muted-foreground">Lista actualizada al {{ cards.generatedAt() }}</p>
+      }
+    }
+
+    @default {
+      <!-- 'idle' (render en el servidor) y 'loading' comparten el mismo esqueleto. -->
+      <div class="space-y-3" aria-busy="true" aria-live="polite">
+        <div appSkeleton class="h-[70px] w-full"></div>
+        @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
+          <div appSkeleton class="h-[74px] w-full"></div>
+        }
+        <span class="sr-only">Cargando la lista de cartas...</span>
+      </div>
+    }
+  }
+</main>

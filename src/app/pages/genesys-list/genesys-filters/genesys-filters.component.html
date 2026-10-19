@@ -1,0 +1,283 @@
+<div class="space-y-5 rounded-lg border bg-card p-4 md:p-5">
+  <!-- Puntos -->
+  <fieldset class="space-y-2">
+    <legend appLabel class="mb-2 flex items-center gap-2 text-muted-foreground">
+      <lucide-icon name="Coins" [size]="14" />
+      Puntos
+    </legend>
+    <div class="flex flex-wrap items-center gap-2">
+      @for (mode of pointsModes; track mode.value) {
+        <app-filter-chip [selected]="filters().pointsMode === mode.value" (toggled)="setPointsMode(mode.value)">
+          {{ mode.label }}
+        </app-filter-chip>
+      }
+
+      @if (filters().pointsMode === 'exact') {
+        <div class="w-44">
+          <select
+            appSelect
+            aria-label="Cantidad exacta de puntos"
+            [ngModel]="filters().pointsExact"
+            (ngModelChange)="patch({ pointsExact: $event })"
+          >
+            <option [ngValue]="null">Cualquiera</option>
+            @for (value of facets().points; track value) {
+              <option [ngValue]="value">{{ value }} {{ value === 1 ? 'punto' : 'puntos' }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      @if (filters().pointsMode === 'range') {
+        <div class="flex items-center gap-2">
+          <input
+            appInput
+            type="number"
+            inputmode="numeric"
+            class="w-24"
+            placeholder="Mín."
+            aria-label="Puntos mínimos"
+            min="0"
+            [value]="filters().pointsMin ?? ''"
+            (input)="setNumber('pointsMin', $any($event.target).value)"
+          />
+          <span class="text-sm text-muted-foreground">a</span>
+          <input
+            appInput
+            type="number"
+            inputmode="numeric"
+            class="w-24"
+            placeholder="Máx."
+            aria-label="Puntos máximos"
+            min="0"
+            [value]="filters().pointsMax ?? ''"
+            (input)="setNumber('pointsMax', $any($event.target).value)"
+          />
+        </div>
+      }
+    </div>
+  </fieldset>
+
+  <div appSeparator></div>
+
+  <!-- Tipo de carta -->
+  <fieldset>
+    <legend appLabel class="mb-2 text-muted-foreground">Tipo de carta</legend>
+    <div class="flex flex-wrap gap-2">
+      @for (kind of kindOptions; track kind) {
+        <app-filter-chip [selected]="isSelected('kinds', kind)" (toggled)="toggleIn('kinds', kind)">
+          {{ kindLabels[kind] }}
+        </app-filter-chip>
+      }
+    </div>
+  </fieldset>
+
+  @if (showMonsters()) {
+    <div appSeparator></div>
+
+    <div class="space-y-4">
+      <p class="text-sm font-semibold text-foreground">Monstruos</p>
+
+      <fieldset>
+        <legend appLabel class="mb-2 text-muted-foreground">Clase</legend>
+        <div class="flex flex-wrap gap-2">
+          @for (monsterClass of facets().monsterClasses; track monsterClass) {
+            <app-filter-chip [selected]="isSelected('monsterClasses', monsterClass)" (toggled)="toggleIn('monsterClasses', monsterClass)">
+              {{ monsterClassLabel(monsterClass) }}
+            </app-filter-chip>
+          }
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend appLabel class="mb-2 text-muted-foreground">Atributo</legend>
+        <div class="flex flex-wrap gap-2">
+          @for (attribute of facets().attributes; track attribute) {
+            <app-filter-chip [selected]="isSelected('attributes', attribute)" (toggled)="toggleIn('attributes', attribute)">
+              {{ attributeLabel(attribute) }}
+            </app-filter-chip>
+          }
+        </div>
+      </fieldset>
+
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="space-y-2">
+          <label appLabel for="genesys-race" class="block text-muted-foreground">Tipo de monstruo</label>
+          <select
+            appSelect
+            id="genesys-race"
+            [ngModel]="selectedRace()"
+            (ngModelChange)="patch({ races: $event ? [$event] : [] })"
+          >
+            <option value="">Todos</option>
+            @for (race of facets().races; track race) {
+              <option [value]="race">{{ race }}</option>
+            }
+          </select>
+        </div>
+
+        <fieldset class="space-y-2">
+          <legend appLabel class="mb-2 text-muted-foreground">Tuner</legend>
+          <div class="flex flex-wrap gap-2">
+            <app-filter-chip [selected]="filters().tuner === 'any'" (toggled)="patch({ tuner: 'any' })">Todos</app-filter-chip>
+            <app-filter-chip [selected]="filters().tuner === 'yes'" (toggled)="patch({ tuner: 'yes' })">Tuner</app-filter-chip>
+            <app-filter-chip [selected]="filters().tuner === 'no'" (toggled)="patch({ tuner: 'no' })">No Tuner</app-filter-chip>
+          </div>
+        </fieldset>
+
+        <fieldset class="space-y-2">
+          <legend appLabel class="mb-2 text-muted-foreground">Deck</legend>
+          <div class="flex flex-wrap gap-2">
+            <app-filter-chip [selected]="filters().zone === 'any'" (toggled)="patch({ zone: 'any' })">Ambos</app-filter-chip>
+            <app-filter-chip [selected]="filters().zone === 'main'" (toggled)="patch({ zone: 'main' })">Principal</app-filter-chip>
+            <app-filter-chip [selected]="filters().zone === 'extra'" (toggled)="patch({ zone: 'extra' })">Extra</app-filter-chip>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-3">
+        <fieldset class="space-y-2">
+          <legend appLabel class="mb-2 text-muted-foreground">Nivel / Rango</legend>
+          <div class="flex items-center gap-2">
+            <input
+              appInput
+              type="number"
+              inputmode="numeric"
+              placeholder="Mín."
+              aria-label="Nivel mínimo"
+              min="0"
+              [attr.max]="facets().maxLevel"
+              [value]="filters().levelMin ?? ''"
+              (input)="setNumber('levelMin', $any($event.target).value)"
+            />
+            <span class="text-sm text-muted-foreground">a</span>
+            <input
+              appInput
+              type="number"
+              inputmode="numeric"
+              placeholder="Máx."
+              aria-label="Nivel máximo"
+              min="0"
+              [attr.max]="facets().maxLevel"
+              [value]="filters().levelMax ?? ''"
+              (input)="setNumber('levelMax', $any($event.target).value)"
+            />
+          </div>
+        </fieldset>
+
+        <fieldset class="space-y-2">
+          <legend appLabel class="mb-2 text-muted-foreground">ATK</legend>
+          <div class="flex items-center gap-2">
+            <input
+              appInput
+              type="number"
+              inputmode="numeric"
+              step="50"
+              placeholder="Mín."
+              aria-label="ATK mínimo"
+              min="0"
+              [value]="filters().atkMin ?? ''"
+              (input)="setNumber('atkMin', $any($event.target).value)"
+            />
+            <span class="text-sm text-muted-foreground">a</span>
+            <input
+              appInput
+              type="number"
+              inputmode="numeric"
+              step="50"
+              placeholder="Máx."
+              aria-label="ATK máximo"
+              min="0"
+              [value]="filters().atkMax ?? ''"
+              (input)="setNumber('atkMax', $any($event.target).value)"
+            />
+          </div>
+        </fieldset>
+
+        <fieldset class="space-y-2">
+          <legend appLabel class="mb-2 text-muted-foreground">DEF</legend>
+          <div class="flex items-center gap-2">
+            <input
+              appInput
+              type="number"
+              inputmode="numeric"
+              step="50"
+              placeholder="Mín."
+              aria-label="DEF mínima"
+              min="0"
+              [value]="filters().defMin ?? ''"
+              (input)="setNumber('defMin', $any($event.target).value)"
+            />
+            <span class="text-sm text-muted-foreground">a</span>
+            <input
+              appInput
+              type="number"
+              inputmode="numeric"
+              step="50"
+              placeholder="Máx."
+              aria-label="DEF máxima"
+              min="0"
+              [value]="filters().defMax ?? ''"
+              (input)="setNumber('defMax', $any($event.target).value)"
+            />
+          </div>
+        </fieldset>
+      </div>
+
+      <p class="text-xs text-muted-foreground">Las cartas con ATK/DEF "?" quedan fuera en cuanto defines un mínimo o un máximo.</p>
+    </div>
+  }
+
+  @if (showSpells()) {
+    <div appSeparator></div>
+
+    <fieldset>
+      <legend appLabel class="mb-2 text-muted-foreground">Tipo de mágica</legend>
+      <div class="flex flex-wrap gap-2">
+        @for (property of facets().spellProperties; track property) {
+          <app-filter-chip [selected]="isSelected('spellProperties', property)" (toggled)="toggleIn('spellProperties', property)">
+            {{ propertyLabel(property) }}
+          </app-filter-chip>
+        }
+      </div>
+    </fieldset>
+  }
+
+  @if (showTraps()) {
+    <div appSeparator></div>
+
+    <fieldset>
+      <legend appLabel class="mb-2 text-muted-foreground">Tipo de trampa</legend>
+      <div class="flex flex-wrap gap-2">
+        @for (property of facets().trapProperties; track property) {
+          <app-filter-chip [selected]="isSelected('trapProperties', property)" (toggled)="toggleIn('trapProperties', property)">
+            {{ propertyLabel(property) }}
+          </app-filter-chip>
+        }
+      </div>
+    </fieldset>
+  }
+
+  <div appSeparator></div>
+
+  <!-- Estado en la lista del TCG: no afecta la legalidad en Genesys, es contexto. -->
+  <fieldset>
+    <legend appLabel class="mb-2 text-muted-foreground">Estado en TCG</legend>
+    <div class="flex flex-wrap gap-2">
+      @for (option of banOptions; track option.value) {
+        <app-filter-chip [selected]="isSelected('banTcg', option.value)" (toggled)="toggleIn('banTcg', option.value)">
+          {{ option.label }}
+        </app-filter-chip>
+      }
+    </div>
+  </fieldset>
+
+  @if (activeCount() > 0) {
+    <div class="flex justify-end pt-1">
+      <button appButton variant="ghost" size="sm" class="gap-2" (click)="clearAll()">
+        <lucide-icon name="Eraser" [size]="16" />
+        Limpiar {{ activeCount() }} {{ activeCount() === 1 ? 'filtro' : 'filtros' }}
+      </button>
+    </div>
+  }
+</div>

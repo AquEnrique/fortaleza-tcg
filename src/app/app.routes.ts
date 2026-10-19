@@ -14,6 +14,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/life-points/life-points.component').then((m) => m.LifePointsComponent),
   },
   {
+    path: 'genesys-list',
+    loadComponent: () => import('./pages/genesys-list/genesys-list.component').then((m) => m.GenesysListComponent),
+  },
+  {
     path: 'angelechy',
     loadComponent: () => import('./pages/angelechy/angelechy.component').then((m) => m.AngelechyComponent),
   },

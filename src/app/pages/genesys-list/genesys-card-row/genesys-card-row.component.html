@@ -1,0 +1,80 @@
+<div class="overflow-hidden rounded-lg border bg-card transition-colors" [class.border-primary]="expanded()">
+  <button
+    type="button"
+    class="flex w-full items-center gap-3 p-2.5 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:p-3"
+    [attr.aria-expanded]="expanded()"
+    (click)="toggled.emit()"
+  >
+    <img
+      [src]="imageUrl()"
+      [alt]="card().name"
+      loading="lazy"
+      decoding="async"
+      width="268"
+      height="391"
+      class="h-[58px] w-10 shrink-0 rounded bg-muted object-cover"
+    />
+
+    <div class="min-w-0 flex-1 space-y-1">
+      <p class="truncate text-sm font-semibold leading-tight md:text-base">{{ card().name }}</p>
+      <p class="truncate text-xs text-muted-foreground">{{ subtitle() }}</p>
+
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+        @if (attributeLabel()) {
+          <span>{{ attributeLabel() }}</span>
+        }
+        @if (levelLabel()) {
+          <span class="text-border">·</span>
+          <span>{{ levelLabel() }}</span>
+          <span class="text-border">·</span>
+          <span class="font-score">{{ atk() }} / {{ def() }}</span>
+        }
+        @for (trait of traits(); track trait) {
+          <span class="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-secondary-foreground">{{ trait }}</span>
+        }
+        @if (card().banTcg) {
+          <span class="rounded bg-destructive/20 px-1.5 py-0.5 text-[10px] font-medium text-destructive-foreground">
+            {{ banLabels[card().banTcg!] }}
+          </span>
+        }
+      </div>
+    </div>
+
+    <div class="flex shrink-0 flex-col items-center justify-center rounded-md border px-2 py-1 md:px-3" [class]="pointsClass()">
+      <span class="font-score text-base font-bold leading-none md:text-lg">{{ card().points }}</span>
+      <span class="text-[9px] uppercase tracking-wide opacity-80">pts</span>
+    </div>
+
+    <lucide-icon
+      name="ChevronDown"
+      [size]="16"
+      class="shrink-0 text-muted-foreground transition-transform duration-200"
+      [class.rotate-180]="expanded()"
+    />
+  </button>
+
+  @if (expanded()) {
+    <div class="space-y-3 border-t bg-background/40 p-3 md:p-4">
+      <p class="whitespace-pre-line text-sm leading-relaxed text-foreground/90">{{ card().desc }}</p>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <div appBadge variant="outline">{{ card().type }}</div>
+        @if (card().extraDeck) {
+          <div appBadge variant="secondary">Deck Extra</div>
+        }
+        @if (card().archetype) {
+          <div appBadge variant="secondary">{{ card().archetype }}</div>
+        }
+        <a
+          [href]="ygoprodeckUrl()"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Ver en YGOPRODeck
+          <lucide-icon name="ExternalLink" [size]="13" />
+        </a>
+      </div>
+    </div>
+  }
+</div>

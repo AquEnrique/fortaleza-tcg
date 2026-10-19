@@ -8,6 +8,7 @@
     "build:gh-pages": "ng build --configuration production --base-href /fortaleza-tcg/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "data:genesys": "node scripts/fetch-genesys-cards.mjs",
     "serve:ssr:angular-app": "node dist/angular-app/server/server.mjs"
   },
   "private": true,
