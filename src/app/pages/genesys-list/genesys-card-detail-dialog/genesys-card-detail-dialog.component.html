@@ -1,0 +1,63 @@
+<app-dialog-close />
+
+<div appDialogHeader class="pr-8">
+  <h2 appDialogTitle>{{ card.name }}</h2>
+  <div appDialogDescription>{{ subtitle }}</div>
+</div>
+
+<div class="flex flex-col gap-4 sm:flex-row">
+  <img
+    [src]="imageUrl"
+    [alt]="card.name"
+    width="421"
+    height="614"
+    class="mx-auto w-40 shrink-0 rounded-lg border sm:mx-0 sm:w-48"
+  />
+
+  <div class="min-w-0 flex-1 space-y-3">
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="flex flex-col items-center justify-center rounded-md border px-3 py-1 font-score" [class]="pointsClass">
+        <span class="text-lg font-bold leading-none">{{ card.points }}</span>
+        <span class="text-[9px] uppercase tracking-wide opacity-80">pts</span>
+      </span>
+      <div appBadge variant="outline">{{ card.type }}</div>
+      @if (card.extraDeck) {
+        <div appBadge variant="secondary">Deck Extra</div>
+      }
+      @if (card.archetype) {
+        <div appBadge variant="secondary">{{ card.archetype }}</div>
+      }
+      @if (card.banTcg) {
+        <div appBadge variant="destructive">{{ banLabels[card.banTcg] }}</div>
+      }
+    </div>
+
+    @if (card.kind === 'monster') {
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+        @if (attributeLabel) {
+          <span>{{ attributeLabel }}</span>
+        }
+        @if (levelLabel) {
+          <span>{{ levelLabel }}</span>
+        }
+        <span class="font-score font-semibold text-foreground">{{ atk }} / {{ def }}</span>
+        @if (card.tuner) {
+          <span class="rounded bg-secondary px-1.5 py-0.5 text-xs font-medium text-secondary-foreground">Tuner</span>
+        }
+        @for (trait of traits; track trait) {
+          <span class="rounded bg-secondary px-1.5 py-0.5 text-xs font-medium text-secondary-foreground">{{ trait }}</span>
+        }
+      </div>
+    }
+
+    <p class="whitespace-pre-line text-sm leading-relaxed text-foreground/90">{{ card.desc }}</p>
+  </div>
+</div>
+
+<div appDialogFooter>
+  <a appButton variant="outline" [href]="ygoprodeckUrl" target="_blank" rel="noopener noreferrer" class="gap-2">
+    <lucide-icon name="ExternalLink" [size]="16" />
+    Ver en YGOPRODeck
+  </a>
+  <button appButton (click)="dialogRef.close()">Cerrar</button>
+</div>

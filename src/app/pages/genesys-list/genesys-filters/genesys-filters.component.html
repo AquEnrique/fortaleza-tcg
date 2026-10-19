@@ -13,18 +13,24 @@
       }
 
       @if (filters().pointsMode === 'exact') {
-        <div class="w-44">
-          <select
-            appSelect
+        <div class="w-36">
+          <input
+            appInput
+            type="number"
+            inputmode="numeric"
+            placeholder="1-{{ pointsBudget }}"
             aria-label="Cantidad exacta de puntos"
-            [ngModel]="filters().pointsExact"
-            (ngModelChange)="patch({ pointsExact: $event })"
-          >
-            <option [ngValue]="null">Cualquiera</option>
-            @for (value of facets().points; track value) {
-              <option [ngValue]="value">{{ value }} {{ value === 1 ? 'punto' : 'puntos' }}</option>
-            }
-          </select>
+            [class.border-destructive]="exactPointsError()"
+            [class.focus-visible:ring-destructive]="exactPointsError()"
+            min="1"
+            [attr.max]="pointsBudget"
+            step="1"
+            [value]="exactPointsInput()"
+            (input)="setExactPoints($any($event.target).value)"
+          />
+          @if (exactPointsError()) {
+            <p class="mt-1 text-xs text-destructive">{{ exactPointsError() }}</p>
+          }
         </div>
       }
 

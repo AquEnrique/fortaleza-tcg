@@ -298,7 +298,6 @@ export function groupCards(cards: GenesysCard[], groupBy: GroupBy): GenesysGroup
 
 /** Distinct values present in the data, so the dropdowns only offer what exists. */
 export type GenesysFacets = {
-  points: number[];
   races: string[];
   attributes: string[];
   spellProperties: string[];
@@ -311,7 +310,6 @@ export type GenesysFacets = {
 
 export function collectFacets(cards: GenesysCard[]): GenesysFacets {
   const sortedUnique = <T>(values: T[], compare: (a: T, b: T) => number) => [...new Set(values)].sort(compare);
-  const descending = (a: number, b: number) => b - a;
   const alphabetical = (a: string, b: string) => a.localeCompare(b, 'en');
   const monsters = cards.filter((card) => card.kind === 'monster');
   const propertiesOf = (kind: GenesysCardKind) =>
@@ -321,10 +319,6 @@ export function collectFacets(cards: GenesysCard[]): GenesysFacets {
     );
 
   return {
-    points: sortedUnique(
-      cards.map((card) => card.points),
-      descending
-    ),
     races: sortedUnique(
       monsters.map((card) => card.race!),
       alphabetical

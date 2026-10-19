@@ -63,7 +63,7 @@
   app-angelechy,
   app-genesys-list,
   app-genesys-filters,
-  app-genesys-card-row,
+  app-genesys-card-tile,
   app-filter-chip,
   app-player-registration,
   app-manual-pairing,
@@ -91,6 +91,16 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    min-height: 0;
+  }
+
+  /* Same reasoning as app-lp-keypad-dialog above: this one also carries its own
+     absolutely positioned close button. */
+  app-genesys-card-detail-dialog {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     min-height: 0;
   }
 
@@ -130,6 +140,13 @@
      screens instead of overflowing. */
   .cdk-overlay-pane.app-lp-keypad-panel {
     @apply flex max-h-[90dvh] w-[92vw] max-w-sm flex-col overflow-y-auto rounded-2xl border bg-background p-4 shadow-lg sm:p-6;
+  }
+
+  /* Genesys card detail: wider than the default dialog since it holds art next to
+     full effect text, with its own max-height + scroll so a long description never
+     pushes the footer off-screen. */
+  .cdk-overlay-pane.app-genesys-card-panel {
+    @apply flex max-h-[90dvh] w-[94vw] max-w-2xl flex-col overflow-y-auto rounded-2xl border bg-background p-4 shadow-lg sm:p-6;
   }
 }
 

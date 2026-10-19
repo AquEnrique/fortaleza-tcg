@@ -18,12 +18,12 @@ import {
   type SortBy,
 } from '../../core/lib/genesys-filter';
 import { GenesysFiltersComponent } from './genesys-filters/genesys-filters.component';
-import { GenesysCardRowComponent } from './genesys-card-row/genesys-card-row.component';
+import { GenesysCardTileComponent } from './genesys-card-tile/genesys-card-tile.component';
 import { FilterChipComponent } from './genesys-filters/filter-chip.component';
 
-/** Rows rendered before the "Mostrar más" button. The unfiltered list is 750 cards,
-    each with its own art, which is more DOM than any one screen needs. */
-const PAGE_SIZE = 150;
+/** Tiles rendered before the "Mostrar más" button. The unfiltered list is 750 cards,
+    each with its own art, which is more DOM than any one screen needs at once. */
+const PAGE_SIZE = 300;
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
   { value: 'points-desc', label: 'Puntos (mayor a menor)' },
@@ -66,7 +66,7 @@ const GROUP_OPTIONS: { value: GroupBy; label: string }[] = [
     SkeletonDirective,
     LucideIcons,
     GenesysFiltersComponent,
-    GenesysCardRowComponent,
+    GenesysCardTileComponent,
     FilterChipComponent,
   ],
   templateUrl: './genesys-list.component.html',
@@ -77,11 +77,11 @@ export class GenesysListComponent {
   protected readonly budget = GENESYS_BUDGET;
   protected readonly sortOptions = SORT_OPTIONS;
   protected readonly groupOptions = GROUP_OPTIONS;
+  /** Placeholder count for the loading grid; just enough to fill a tall viewport. */
+  protected readonly skeletonTiles = Array.from({ length: 20 }, (_, index) => index);
 
   protected readonly filters = signal<GenesysFilters>(DEFAULT_FILTERS);
   protected readonly showFilters = signal(false);
-  /** Only one card is expanded at a time, so the list never turns into a wall of text. */
-  protected readonly expandedId = signal<number | null>(null);
   protected readonly collapsedGroups = signal<ReadonlySet<string>>(new Set());
 
   protected readonly activeFilterCount = computed(() => countActiveFilters(this.filters()));
@@ -150,10 +150,6 @@ export class GenesysListComponent {
   protected clearFilters(): void {
     const { sortBy, groupBy } = this.filters();
     this.filters.set({ ...DEFAULT_FILTERS, sortBy, groupBy });
-  }
-
-  protected toggleCard(id: number): void {
-    this.expandedId.update((current) => (current === id ? null : id));
   }
 
   protected isGroupCollapsed(key: string): boolean {

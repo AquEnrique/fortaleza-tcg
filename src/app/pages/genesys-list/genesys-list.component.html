@@ -176,13 +176,9 @@
               }
 
               @if (!isGroupCollapsed(group.key)) {
-                <div class="space-y-2">
+                <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
                   @for (card of group.cards; track card.id) {
-                    <app-genesys-card-row
-                      [card]="card"
-                      [expanded]="expandedId() === card.id"
-                      (toggled)="toggleCard(card.id)"
-                    />
+                    <app-genesys-card-tile [card]="card" />
                   }
                 </div>
               }
@@ -207,11 +203,13 @@
 
     @default {
       <!-- 'idle' (render en el servidor) y 'loading' comparten el mismo esqueleto. -->
-      <div class="space-y-3" aria-busy="true" aria-live="polite">
-        <div appSkeleton class="h-[70px] w-full"></div>
-        @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
-          <div appSkeleton class="h-[74px] w-full"></div>
-        }
+      <div aria-busy="true" aria-live="polite">
+        <div appSkeleton class="mb-4 h-[90px] w-full"></div>
+        <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
+          @for (tile of skeletonTiles; track tile) {
+            <div appSkeleton class="aspect-[268/391] w-full"></div>
+          }
+        </div>
         <span class="sr-only">Cargando la lista de cartas...</span>
       </div>
     }

@@ -1,4 +1,4 @@
-import { Component, computed, input, model } from '@angular/core';
+import { Component, computed, input, linkedSignal, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { InputDirective } from '../../../ui/input/input.directive';
 import { LabelDirective } from '../../../ui/label/label.directive';
@@ -9,6 +9,7 @@ import { LucideIcons } from '../../../core/icons';
 import { FilterChipComponent } from './filter-chip.component';
 import {
   ATTRIBUTE_LABELS,
+  GENESYS_BUDGET,
   KIND_LABELS,
   MONSTER_CLASS_LABELS,
   PROPERTY_LABELS,
@@ -69,6 +70,24 @@ export class GenesysFiltersComponent {
   protected readonly banOptions = BAN_OPTIONS;
   protected readonly pointsModes = POINTS_MODES;
   protected readonly kindLabels = KIND_LABELS;
+  protected readonly pointsBudget = GENESYS_BUDGET;
+
+  // The exact-points box is free text while the user is typing (so "1" on the way to
+  // "15" isn't rejected mid-keystroke), re-synced from the committed filter whenever
+  // something else changes it (switching mode, "Limpiar filtros", ...).
+  protected readonly exactPointsInput = linkedSignal<GenesysFilters, string>({
+    source: this.filters,
+    computation: (filters) => (filters.pointsExact === null ? '' : String(filters.pointsExact)),
+  });
+
+  protected readonly exactPointsError = computed(() => {
+    const raw = this.exactPointsInput().trim();
+    if (raw === '') return null;
+    const value = Number(raw);
+    if (!Number.isInteger(value)) return 'Ingresa un número entero.';
+    if (value < 1 || value > GENESYS_BUDGET) return `Debe estar entre 1 y ${GENESYS_BUDGET}.`;
+    return null;
+  });
 
   /** An empty kind filter means "all kinds", so every section stays visible. */
   private readonly showsKind = (kind: GenesysCardKind) => {
@@ -115,6 +134,22 @@ export class GenesysFiltersComponent {
   protected setNumber(key: keyof GenesysFilters, raw: string): void {
     const value = raw.trim() === '' ? null : Number(raw);
     this.patch({ [key]: value === null || Number.isNaN(value) ? null : value } as Partial<GenesysFilters>);
+  }
+
+  /** Keeps whatever the user typed on screen (so an out-of-range draft stays visible
+      with its error) but only ever commits a valid 1-100 integer, or null, to the
+      actual filter - an invalid draft just leaves the last valid value in effect. */
+  protected setExactPoints(raw: string): void {
+    this.exactPointsInput.set(raw);
+    const trimmed = raw.trim();
+    if (trimmed === '') {
+      this.patch({ pointsExact: null });
+      return;
+    }
+    const value = Number(trimmed);
+    if (Number.isInteger(value) && value >= 1 && value <= GENESYS_BUDGET) {
+      this.patch({ pointsExact: value });
+    }
   }
 
   protected clearAll(): void {
