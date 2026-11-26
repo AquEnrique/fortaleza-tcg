@@ -1,0 +1,66 @@
+<main class="flex min-h-0 flex-1 flex-col items-center gap-4 p-3 sm:gap-6 sm:p-4">
+  <h1 class="flex items-center gap-2 text-lg font-semibold sm:text-xl">
+    <lucide-icon name="Gift" [size]="22" />
+    Amigo Seteado
+  </h1>
+
+  <div class="relative flex w-full max-w-xl flex-1 items-center justify-center overflow-hidden rounded-xl border-2 border-border">
+    @if (phase() !== 'revealed') {
+      @for (n of names(); track n.name; let i = $index) {
+        <span
+          class="floating pointer-events-none absolute whitespace-nowrap text-sm font-semibold text-muted-foreground sm:text-base"
+          [class.leaving]="phase() === 'leaving'"
+          [style.left.%]="n.left"
+          [style.top.%]="n.top"
+          [style.--dur]="n.duration + 's'"
+          [style.--delay]="n.delay + 's'"
+          [style.--leave-delay]="i * 40 + 'ms'"
+          >{{ n.name }}</span
+        >
+      }
+    } @else {
+      @let r = result();
+      <div class="pop flex flex-col items-center gap-3 p-6 text-center">
+        <span class="text-sm font-medium uppercase tracking-widest text-muted-foreground">De</span>
+        <span class="xmas-green text-3xl font-bold sm:text-5xl">{{ r?.persona }}</span>
+        <span class="text-sm font-medium uppercase tracking-widest text-muted-foreground">A</span>
+        <span class="xmas-red text-3xl font-bold sm:text-5xl">{{ r?.destinatario }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="w-full max-w-xl">
+    @if (phase() === 'revealed') {
+      <button appButton variant="outline" class="w-full gap-2" (click)="reset()">
+        <lucide-icon name="RotateCcw" [size]="16" />
+        Probar otro código
+      </button>
+    } @else {
+      <form class="flex gap-2" [class.shake]="error()" (ngSubmit)="reveal()">
+        <input
+          appInput
+          name="code"
+          [(ngModel)]="code"
+          [maxlength]="codeLength"
+          placeholder="Tu código de 8 caracteres"
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          class="font-score uppercase tracking-widest"
+          [disabled]="phase() !== 'idle'"
+        />
+        <button appButton type="submit" class="gap-2" [disabled]="phase() !== 'idle'">
+          @if (phase() === 'loading') {
+            <lucide-icon name="Loader2" [size]="16" class="animate-spin" />
+          } @else {
+            <lucide-icon name="Gift" [size]="16" />
+          }
+          Revelar
+        </button>
+      </form>
+      @if (error()) {
+        <p class="mt-2 text-sm text-destructive">{{ error() }}</p>
+      }
+    }
+  </div>
+</main>
