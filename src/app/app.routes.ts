@@ -17,5 +17,9 @@ export const routes: Routes = [
     path: 'angelechy',
     loadComponent: () => import('./pages/angelechy/angelechy.component').then((m) => m.AngelechyComponent),
   },
+  {
+    path: 'amigo-seteado',
+    loadComponent: () => import('./pages/amigo-seteado/amigo-seteado.component').then((m) => m.AmigoSeteadoComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

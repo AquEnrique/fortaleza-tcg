@@ -16,6 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/judge', label: 'Vista de Juez', icon: 'Gavel', requiresRunning: true },
   { href: '/life-points', label: 'Puntos de Vida', icon: 'Heart', requiresRunning: false },
   { href: '/angelechy', label: 'Angelechy', icon: 'Crown', requiresRunning: false },
+  { href: '/amigo-seteado', label: 'Amigo Seteado', icon: 'Gift', requiresRunning: false },
 ];
 
 /**
